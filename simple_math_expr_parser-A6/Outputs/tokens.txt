@@ -1,0 +1,11 @@
+TOKENS:
+ID	'id'
+PLUS	'+'
+LPAREN	'('
+ID	'id'
+MINUS	'-'
+ID	'id'
+RPAREN	')'
+DIVIDE	'/'
+ID	'id'
+EOF	''
