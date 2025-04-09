@@ -2,7 +2,8 @@
 #include <fstream>
 #include <string>
 #include "include/lexer.h"
-#include "include/parser.h"
+#include "include/RD_parser.h"         
+#include "include/LL1_parser.h"  
 
 std::string readInputFile() {
     std::ifstream file("ex_input/input.txt");
@@ -32,10 +33,15 @@ int main() {
     std::vector<Token> tokens = lexer.tokenize();
     writeTokens(tokens);
 
-    Parser parser(tokens);
-    parser.parse();
+    // RD parser    :)
+    // Parser rdParser(tokens);
+    // rdParser.parse();
 
-    std::cout << "Parsing completed \n";
+    // LL1 Parser   :(
+    LL1Parser ll1Parser(tokens);
+    ll1Parser.parse();
+
+    std::cout << "Parsing completed\n";
     std::cout << "Tokens saved to Outputs/tokens.txt\n";
 
     return 0;
