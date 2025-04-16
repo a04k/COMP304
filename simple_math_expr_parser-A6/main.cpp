@@ -3,7 +3,8 @@
 #include <string>
 #include "include/lexer.h"
 #include "include/RD_parser.h"         
-#include "include/LL1_parser.h"  
+// #include "include/LL1_parser.h"  
+#include "include/LL1_parser_ET.h"
 
 std::string readInputFile() {
     std::ifstream file("ex_input/input.txt");
@@ -37,14 +38,29 @@ int main() {
     // Parser rdParser(tokens);
     // rdParser.parse();
 
-    // LL1 Parser   :(
+    // LL1 Parser- hardcoded table  :(
+    //LL1Parser ll1Parser(tokens);
+    //ll1Parser.parse();
+    
     LL1Parser ll1Parser(tokens);
-    ll1Parser.parse();
+    
+    // Load the parse table
+    if (!ll1Parser.loadParseTable("ex_input/parsetable.txt")) {
+      std::cerr << "Failed to load parse table.\n";
+      return 1;
+    }
+    
+    // Parse using loaded table
+    if (!ll1Parser.parse()) {
+      std::cerr << "Parsing failed due to syntax errors.\n";
+      return 1;
+    }
 
     std::cout << "Parsing completed\n";
     std::cout << "Tokens saved to Outputs/tokens.txt\n";
 
     return 0;
+    
   } catch (const std::exception& e) {
     std::cerr << "Error: " << e.what() << std::endl;
     return 1;
