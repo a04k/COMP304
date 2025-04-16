@@ -1,5 +1,5 @@
-#ifndef LL1_PARSER_H
-#define LL1_PARSER_H
+#ifndef LL1_PARSER_ET_H
+#define LL1_PARSER_ET_H
 
 #include <iostream>
 #include <fstream>
@@ -37,9 +37,27 @@ public:
   std::string startSymbol;
   std::vector<Token> tokens;
 
-  LL1Parser(const std::vector<Token>& t) : tokens(t), startSymbol("") {}
+  LL1Parser(const std::vector<Token>& t, const ParseTable& parseTable,
+            const std::set<std::string>& terms, const std::set<std::string>& nonTerms)
+      : tokens(t), table(parseTable), terminals(terms), nonTerminals(nonTerms), startSymbol("") {
+    // set start symbol to the first non-terminal in the parse table
+    if (!nonTerminals.empty()) {
+      startSymbol = *nonTerminals.begin();
+    }
+    // Log grammar symbols for debugging
+    std::cout << "\n--- Grammar Symbols ---\n";
+    std::cout << "Non-Terminals: ";
+    for (const auto& nt : nonTerminals) {
+      std::cout << "'" << nt << "' ";
+    }
+    std::cout << "\nTerminals: ";
+    for (const auto& t : terminals) {
+      std::cout << "'" << t << "' ";
+    }
+    std::cout << "\n-------------------------\n";
+  }
 
-/*   bool loadParseTable(const std::string& filename) {
+  /* bool loadParseTable(const std::string& filename) {
       std::ifstream file(filename);
       if (!file.is_open()) {
         std::cerr << "Error: Could not open parse table file.\n";
@@ -107,65 +125,52 @@ public:
     }
 */
 
-bool loadParseTable(const std::string& filename) {
-  std::ifstream file(filename);
-  if (!file.is_open()) {
-    std::cerr << "Error: Could not open parse table file.\n";
-    return false;
-  }
-
-  std::string line;
-  while (std::getline(file, line)) {
-    std::istringstream iss(line);
-    std::string nonTerminal, terminal, symbol;
-
-    // Read non-terminal and terminal
-    if (!(iss >> nonTerminal >> terminal)) {
-      std::cerr << "Error: Invalid line format: " << line << '\n';
-      continue;
+  bool loadParseTable(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+      std::cerr << "Error: Could not open parse table file.\n";
+      return false;
     }
 
-    // Store symbols in grammar sets
-    nonTerminals.insert(nonTerminal);
-    terminals.insert(terminal);
+    std::string line;
+    while (std::getline(file, line)) {
+      std::istringstream iss(line);
+      std::string nonTerminal, terminal, symbol;
 
-    // Read production symbols
-    std::vector<std::string> production;
-    while (iss >> symbol) {
-      production.push_back(symbol);
+      if (!(iss >> nonTerminal >> terminal)) {
+        std::cerr << "Error: Invalid line format: " << line << '\n';
+        continue;
+      }
+
+      nonTerminals.insert(nonTerminal);
+      terminals.insert(terminal);
+
+      std::vector<std::string> production;
+      while (iss >> symbol) {
+        production.push_back(symbol);
+      }
+
+      table[nonTerminal][terminal] = production;
+
+      if (startSymbol.empty()) {
+        startSymbol = nonTerminal;
+      }
     }
 
-    // Save to parse table
-    table[nonTerminal][terminal] = production;
-
-    // Set start symbol on first rule
-    if (startSymbol.empty()) {
-      startSymbol = nonTerminal;
-    }
-  }
-
-  file.close();
-  logGrammarSymbols();
-  return !startSymbol.empty();
-}
-
-
-private:
-  void logGrammarSymbols() const {
+    file.close();
     std::cout << "\n--- Grammar Symbols ---\n";
     std::cout << "Non-Terminals: ";
     for (const auto& nt : nonTerminals) {
       std::cout << "'" << nt << "' ";
     }
-    std::cout << "\n";
-    std::cout << "Terminals: ";
+    std::cout << "\nTerminals: ";
     for (const auto& t : terminals) {
       std::cout << "'" << t << "' ";
     }
     std::cout << "\n-------------------------\n";
+    return !startSymbol.empty();
   }
 
-public:
   bool parse() {
     int tokenIndex = 0;
     std::stack<std::string> parseStack;
@@ -180,11 +185,10 @@ public:
       std::string currentLexeme = (tokenIndex < tokens.size()) ?
           tokens[tokenIndex].lexeme : "EOF";
 
-      // log current state
       std::cout << "Stack top: '" << top << "', Current token: '" << currentTokenStr
                 << "' (lexeme: '" << currentLexeme << "')\n";
 
-      if (terminals.count(top)) { // if top element is a terminal (if the set of terminals has at least one of the top token)
+      if (terminals.count(top)) {
         if (top == currentTokenStr) {
           std::cout << "Matched terminal: '" << currentLexeme << "'\n";
           parseStack.pop();
@@ -198,7 +202,7 @@ public:
                     << "'. Expected: '" << top << "'.\n";
           return false;
         }
-      } else if (nonTerminals.count(top)) { // same thing as above just for non terminals
+      } else if (nonTerminals.count(top)) {
         if (table.count(top) && table[top].count(currentTokenStr)) {
           const std::vector<std::string>& production = table[top][currentTokenStr];
           std::cout << "Applying rule: " << top << " -> ";
@@ -223,7 +227,6 @@ public:
       }
     }
 
-    // successful if end of tokens is reached
     if (tokenIndex == tokens.size()) {
       std::cout << "Parse successful!\n";
       return true;
@@ -234,4 +237,4 @@ public:
   }
 };
 
-#endif // LL1_PARSER_H
+#endif // LL1_PARSER_ET_H
