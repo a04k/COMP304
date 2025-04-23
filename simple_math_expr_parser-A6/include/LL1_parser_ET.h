@@ -18,12 +18,15 @@ std::string tokenTypeToStringParser(TokenType type) {
   switch(type) {
     case TokenType::ID: return "id";
     case TokenType::NUMBER: return "id";
+    case TokenType::DATATYPE: return "datatype";
     case TokenType::PLUS: return "+";
     case TokenType::MINUS: return "-";
     case TokenType::TIMES: return "*";
     case TokenType::DIVIDE: return "/";
     case TokenType::LPAREN: return "(";
     case TokenType::RPAREN: return ")";
+    case TokenType::COMMA: return ",";
+    case TokenType::SEMICOLON: return ";";
     case TokenType::END_OF_FILE: return "$";
     default: return "invalid";
   }

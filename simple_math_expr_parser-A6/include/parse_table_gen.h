@@ -64,7 +64,7 @@ public:
         }
       }
     }
-    terms.insert("$"); // Add end-of-file
+    terms.insert("$"); // Add eof
 
     return true;
   }
@@ -180,7 +180,7 @@ public:
     std::cout << "\nParse Table:\n";
     for (const auto& nt : table) {
       for (const auto& t : nt.second) {
-        std::cout << nt.first << " -> " << t.first << ": ";
+        std::cout << nt.first << "-" << t.first << ": \t ";
         for (const auto& sym : t.second) std::cout << sym << " ";
         std::cout << "\n";
       }
