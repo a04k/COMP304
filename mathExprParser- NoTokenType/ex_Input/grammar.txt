@@ -1,0 +1,6 @@
+Decl : datatype id L ;
+L : , id L
+L : epsilon
+datatype : int
+datatype : float
+datatype : char

@@ -6,8 +6,8 @@
 #include <cctype>
 
 enum class TokenType {
-    ID, NUMBER,
-    PLUS, MINUS, TIMES, DIVIDE,
+    ID, NUMBER, DATATYPE,
+    PLUS, MINUS, TIMES, DIVIDE, COMMA, SEMICOLON,
     LPAREN, RPAREN,
     END_OF_FILE,
     INVALID
@@ -29,6 +29,9 @@ struct Token {
             case TokenType::DIVIDE: return "DIVIDE";
             case TokenType::LPAREN: return "LPAREN";
             case TokenType::RPAREN: return "RPAREN";
+            case TokenType::COMMA: return "COMMA";
+            case TokenType::SEMICOLON: return "SEMICOLON";
+            case TokenType::DATATYPE: return "DATATYPE";
             case TokenType::END_OF_FILE: return "EOF";
             default: return "INVALID";
         }
@@ -65,6 +68,8 @@ public:
                     case '/': tokens.emplace_back(TokenType::DIVIDE, "/"); break;
                     case '(': tokens.emplace_back(TokenType::LPAREN, "("); break;
                     case ')': tokens.emplace_back(TokenType::RPAREN, ")"); break;
+                    case ',': tokens.emplace_back(TokenType::COMMA, ","); break;
+                    case ';': tokens.emplace_back(TokenType::SEMICOLON, ";"); break;
                     default: throw std::runtime_error("Unexpected character: " + std::string(1, c));
                 }
                 pos++;
@@ -73,13 +78,18 @@ public:
         tokens.emplace_back(TokenType::END_OF_FILE, "");
         return tokens;
     }
-
+    
 private:
+
     Token scanIdentifier() {
         size_t start = pos;
         while (pos < input.size() && isalnum(input[pos])) pos++;   // alnum = alphanumeric 
         // this loops from current pos until a non alphanumeric is found so a space or something, very simple, probably problematic
-        return Token(TokenType::ID, input.substr(start, pos - start));
+        std::string res = input.substr(start, pos - start);
+        if( res == "int" || res == "char" || res == "float") 
+            return Token(TokenType::DATATYPE, res);
+        else
+        return Token(TokenType::ID, res);
     }
 
     Token scanNumber() { // same as the above code really but just digits.
